@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>fund-lens</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1f2e;
+      --surface2:  #222840;
+      --border:    #2d3555;
+      --border2:   #3d4870;
+      --text:      #e2e8f0;
+      --muted:     #8892b0;
+      --accent:    #60a5fa;
+      --accent2:   #a78bfa;
+      --green:     #34d399;
+      --red:       #f87171;
+      --yellow:    #fbbf24;
+      --radius:    10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: color .15s, border-color .15s;
+    }
+    .header-link:hover { color: var(--text); border-color: var(--border2); }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 20px 32px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .tab {
+      padding: 10px 22px;
+      border-radius: 8px 8px 0 0;
+      border: 1px solid transparent;
+      border-bottom: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      transition: color .15s, background .15s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--text);
+      background: var(--bg);
+      border-color: var(--border);
+      border-bottom-color: var(--bg);
+      margin-bottom: -1px;
+    }
+
+    /* ── Pages ── */
+    .page { display: none; padding: 32px; max-width: 1100px; margin: 0 auto; }
+    .page.active { display: block; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+    @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    .card-title span {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-left: 8px;
+    }
+
+    /* ── Form elements ── */
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    label .req { color: var(--accent); margin-left: 2px; }
+    label .opt { font-size: 11px; color: var(--border2); font-weight: 400; }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 10px 13px;
+      outline: none;
+      transition: border-color .15s;
+      appearance: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--border2); }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--border2);
+      margin: 20px 0 12px;
+    }
+
+    .prefix-input { position: relative; }
+    .prefix-input span {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted); font-size: 14px; pointer-events: none;
+    }
+    .prefix-input input { padding-left: 22px; }
+
+    .suffix-input { position: relative; }
+    .suffix-input span {
+      position: absolute; right: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted); font-size: 14px; pointer-events: none;
+    }
+    .suffix-input input { padding-right: 28px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 24px; border-radius: 8px; border: none;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary  { background: var(--accent); color: #0f1117; }
+    .btn-ghost    { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+    .btn-full     { width: 100%; justify-content: center; }
+
+    .form-actions { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
+
+    /* ── Results ── */
+    .result-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .result-box.hidden { display: none; }
+
+    .result-section { margin-bottom: 20px; }
+    .result-section:last-child { margin-bottom: 0; }
+    .result-section h4 {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--muted); margin-bottom: 10px;
+    }
+    .result-section p { font-size: 14px; line-height: 1.7; color: var(--text); }
+
+    .pill-list { display: flex; flex-direction: column; gap: 8px; }
+    .pill { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--text); }
+    .pill-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+    .dot-blue  { background: var(--accent); }
+    .dot-red   { background: var(--red); }
+    .dot-green { background: var(--green); }
+
+    .verdict-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+    .verdict-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px; text-align: center;
+    }
+    .verdict-card .category { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .verdict-card .winner   { font-size: 14px; font-weight: 600; color: var(--green); }
+
+    .error-box {
+      background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3);
+      border-radius: 8px; padding: 14px 16px; font-size: 13px; color: var(--red);
+    }
+    .placeholder-hint { color: var(--muted); font-size: 14px; padding: 40px 0; text-align: center; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(15,17,23,.4); border-top-color: #0f1117;
+      border-radius: 50%; animation: spin .6s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Chat ── */
+    .chat-window {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); min-height: 300px; max-height: 480px;
+      overflow-y: auto; padding: 20px;
+      display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px;
+    }
+    .chat-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--border2); font-size: 14px; gap: 10px; padding: 40px 0;
+    }
+    .bubble { max-width: 85%; }
+    .bubble.user      { align-self: flex-end; }
+    .bubble.assistant { align-self: flex-start; }
+    .bubble-inner { padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+    .user .bubble-inner      { background: var(--accent); color: #0f1117; border-bottom-right-radius: 4px; }
+    .assistant .bubble-inner { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
+    .bubble-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+    .user .bubble-label { text-align: right; }
+
+    .chat-input-row { display: flex; gap: 10px; }
+    .chat-input-row textarea { flex: 1; resize: none; height: 48px; padding: 13px; }
+    .send-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0 20px; background: var(--accent); color: #0f1117;
+      border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: opacity .15s; white-space: nowrap;
+    }
+    .send-btn:hover { opacity: .85; }
+    .send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Typing indicator (chat) ── */
+    .typing-indicator {
+      display: flex; align-items: center; gap: 5px; padding: 4px 2px;
+    }
+    .typing-indicator span {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border2);
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); background: var(--border2); }
+      30%            { transform: translateY(-6px); background: var(--accent); }
+    }
+
+    /* spinner variant for dark bg (send button) */
+    .spinner-dark {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(15,17,23,.3); border-top-color: #0f1117;
+      border-radius: 50%; animation: spin .6s linear infinite; display: inline-block;
+    }
+
+    .clear-btn {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 14px; border-radius: 6px;
+      font-size: 12px; cursor: pointer; transition: color .15s;
+    }
+    .clear-btn:hover { color: var(--text); }
+    .chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+
+    /* ── Context rows ── */
+    .context-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .context-row  { display: flex; gap: 8px; align-items: center; }
+    .context-row input { flex: 1; }
+    .remove-ctx { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; }
+    .remove-ctx:hover { color: var(--red); }
+    .add-ctx {
+      background: transparent; border: 1px dashed var(--border); color: var(--muted);
+      padding: 7px; border-radius: 6px; font-size: 12px; cursor: pointer; width: 100%;
+      margin-top: 4px; transition: color .15s;
+    }
+    .add-ctx:hover { color: var(--text); border-color: var(--border2); }
+
+    /* ── Home page ── */
+    .home-hero {
+      text-align: center;
+      padding: 48px 0 40px;
+      max-width: 640px;
+      margin: 0 auto 48px;
+    }
+    .home-badge {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+    .home-hero h1 {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+    .home-hero p {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      cursor: pointer;
+      transition: border-color .2s, transform .15s;
+    }
+    .feature-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 14px;
+    }
+    .icon-blue   { background: rgba(96,165,250,.15); }
+    .icon-purple { background: rgba(167,139,250,.15); }
+    .icon-green  { background: rgba(52,211,153,.15); }
+    .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .feature-link {
+      display: inline-block; margin-top: 14px;
+      font-size: 13px; color: var(--accent); font-weight: 500;
+    }
+
+    .how-section { margin-bottom: 40px; }
+    .how-section h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--accent);
+    }
+    .step-body h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .step-body p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    .notice {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(251,191,36,.07); border: 1px solid rgba(251,191,36,.2);
+      border-radius: var(--radius); padding: 16px 20px;
+      margin-bottom: 40px;
+    }
+    .notice-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+    .notice h4 { font-size: 13px; font-weight: 600; color: var(--yellow); margin-bottom: 4px; }
+    .notice p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .notice a  { color: var(--yellow); }
+
+    .tip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .tip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .tip-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); margin-bottom: 6px; }
+    .tip p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">fund-lens</div>
+  <a class="header-link" href="/docs" target="_blank">API Docs ↗</a>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('home')">Home</button>
+  <button class="tab" onclick="switchTab('analyze')">Analyze</button>
+  <button class="tab" onclick="switchTab('ask')">Ask CFO</button>
+  <button class="tab" onclick="switchTab('compare')">Compare</button>
+</div>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="page-home" class="page active">
+
+  <div class="home-hero">
+    <div class="home-badge">Powered by Claude AI · FastAPI</div>
+    <h1>fund-lens</h1>
+    <p>An AI financial analyst for PE-backed businesses and CFO teams. Drop in your numbers and get analyst-quality insights — narrative analysis, risk flags, and recommendations — in seconds.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px" class="data-status-grid">
+    <div style="display:flex;gap:14px;align-items:flex-start;background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:var(--radius);padding:16px 20px">
+      <div style="font-size:18px;flex-shrink:0;line-height:1.4">✅</div>
+      <div>
+        <h4 style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:6px">Live Data — Fetched Fresh Every 15 Minutes</h4>
+        <ul style="font-size:13px;color:var(--muted);line-height:1.7;padding-left:16px">
+          <li>10-Year Treasury yield &amp; short-term rates</li>
+          <li>VIX (market volatility / risk sentiment)</li>
+          <li>S&amp;P 500 rolling 30-day performance</li>
+          <li>Median EV/Revenue (public SaaS basket)</li>
+          <li>Recent PE/VC news <span style="color:var(--border2)">(if Tavily key set)</span></li>
+        </ul>
+      </div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:var(--radius);padding:16px 20px">
+      <div style="font-size:18px;flex-shrink:0;line-height:1.4">⚠</div>
+      <div>
+        <h4 style="font-size:13px;font-weight:600;color:var(--yellow);margin-bottom:6px">Still From Training Data (cutoff Aug 2025)</h4>
+        <ul style="font-size:13px;color:var(--muted);line-height:1.7;padding-left:16px">
+          <li>Private market deal terms &amp; fund data</li>
+          <li>Company-specific recent news</li>
+          <li>Regulatory changes post-Aug 2025</li>
+          <li>Financial concepts, ratios &amp; best practices <span style="color:var(--border2)">(timeless — not a concern)</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card" onclick="switchTab('analyze')">
+      <div class="feature-icon icon-blue">📊</div>
+      <h3>Analyze a Company</h3>
+      <p>Enter revenue, margins, burn rate, and runway. Get a plain-English narrative on financial health, with specific risk flags and concrete recommendations.</p>
+      <span class="feature-link">Open Analyze →</span>
+    </div>
+    <div class="feature-card" onclick="switchTab('ask')">
+      <div class="feature-icon icon-purple">💬</div>
+      <h3>Ask CFO Questions</h3>
+      <p>Ask anything — "Should we raise now or wait?", "What's a healthy burn multiple for Series B?", "How do we improve our Rule of 40?". Supports back-and-forth follow-ups.</p>
+      <span class="feature-link">Open Ask →</span>
+    </div>
+    <div class="feature-card" onclick="switchTab('compare')">
+      <div class="feature-icon icon-green">⚖️</div>
+      <h3>Compare Two Companies</h3>
+      <p>Side-by-side analysis of two portfolio companies. See who wins on growth, profitability, burn efficiency, and financial health — with an overall verdict.</p>
+      <span class="feature-link">Open Compare →</span>
+    </div>
+  </div>
+
+  <div class="how-section">
+    <h2>How it works</h2>
+    <div class="card">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Enter your numbers</h4>
+            <p>Fill in the form fields — revenue, margins, runway, headcount. Nothing is required beyond company name and revenue; the more you add, the richer the analysis.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Live market data + your numbers → Claude</h4>
+            <p>fund-lens fetches current interest rates, VIX, S&amp;P 500 performance, and public SaaS valuation multiples from Yahoo Finance, then combines them with your metrics into a structured prompt. Claude receives both your company data and today's market context.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>You get structured, actionable output</h4>
+            <p>The response is parsed into clearly labelled sections — narrative analysis, key insights, risk flags, and recommendations — so it's ready to act on, not just read.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Ask follow-ups (Ask tab only)</h4>
+            <p>The Ask tab keeps a running conversation history. Each follow-up is sent with the full prior context, so Claude remembers what was already discussed — just like talking to a human advisor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:16px"><h2 style="font-size:18px;font-weight:600;margin-bottom:16px">Tips for best results</h2></div>
+  <div class="tip-grid">
+    <div class="tip">
+      <div class="tip-label">Analyze</div>
+      <p>Use <strong style="color:var(--text)">Focus Areas</strong> to direct the AI — checking "Fundraising Readiness" gives very different output than "Burn Efficiency".</p>
+    </div>
+    <div class="tip">
+      <div class="tip-label">Ask CFO</div>
+      <p>Fill in the <strong style="color:var(--text)">Context</strong> fields (ARR, stage, industry) before asking. Grounded context produces specific answers, not generic advice.</p>
+    </div>
+    <div class="tip">
+      <div class="tip-label">Compare</div>
+      <p>You don't need identical fields for both companies. Claude handles missing data gracefully and notes where gaps limit the comparison.</p>
+    </div>
+    <div class="tip">
+      <div class="tip-label">General</div>
+      <p>Use the <strong style="color:var(--text)">Fill Example</strong> button on any tab to see a realistic sample and understand what the output looks like before entering your own data.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ANALYZE ══════════════ -->
+<div id="page-analyze" class="page">
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-title">Company Metrics <span>Only name and revenue are required</span></div>
+
+        <div class="field">
+          <label>Company Name <span class="req">*</span></label>
+          <input type="text" id="an-name" placeholder="e.g. Acme SaaS" />
+        </div>
+
+        <div class="section-label">Revenue &amp; Growth</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Annual Revenue <span class="req">*</span></label>
+            <div class="prefix-input"><span>$</span><input type="number" id="an-revenue" placeholder="5,000,000" min="1" /></div>
+          </div>
+          <div class="field">
+            <label>Revenue Growth YoY <span class="opt">(optional)</span></label>
+            <div class="suffix-input"><input type="number" id="an-growth" placeholder="95" /><span>%</span></div>
+          </div>
+        </div>
+
+        <div class="section-label">Profitability</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Gross Margin <span class="opt">(optional)</span></label>
+            <div class="suffix-input"><input type="number" id="an-gm" placeholder="72" min="-100" max="100" /><span>%</span></div>
+          </div>
+          <div class="field">
+            <label>EBITDA Margin <span class="opt">(optional)</span></label>
+            <div class="suffix-input"><input type="number" id="an-ebitda" placeholder="-8" min="-100" max="100" /><span>%</span></div>
+          </div>
+        </div>
+
+        <div class="section-label">Cash &amp; Runway</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Monthly Burn Rate <span class="opt">(optional)</span></label>
+            <div class="prefix-input"><span>$</span><input type="number" id="an-burn" placeholder="250,000" min="0" /></div>
+          </div>
+          <div class="field">
+            <label>Runway Remaining <span class="opt">(optional)</span></label>
+            <div class="suffix-input"><input type="number" id="an-runway" placeholder="18" min="0" /><span>mo</span></div>
+          </div>
+        </div>
+
+        <div class="section-label">Company Profile</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Industry <span class="opt">(optional)</span></label>
+            <input type="text" id="an-industry" placeholder="e.g. SaaS, FinTech" />
+          </div>
+          <div class="field">
+            <label>Stage <span class="opt">(optional)</span></label>
+            <select id="an-stage">
+              <option value="">— Select stage —</option>
+              <option>Pre-Seed</option><option>Seed</option><option>Series A</option>
+              <option>Series B</option><option>Series C</option><option>Series D+</option>
+              <option>Growth</option><option>Pre-IPO</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Headcount <span class="opt">(optional)</span></label>
+          <input type="number" id="an-headcount" placeholder="e.g. 38" min="1" />
+        </div>
+
+        <div class="section-label">Focus Areas <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px" id="focus-checks">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" value="liquidity"> Liquidity</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" value="burn efficiency"> Burn Efficiency</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" value="growth"> Growth</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" value="profitability"> Profitability</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" value="unit economics"> Unit Economics</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" value="fundraising readiness"> Fundraising Readiness</label>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" id="an-btn" onclick="runAnalyze()">
+            <span id="an-btn-text">Analyze</span>
+          </button>
+          <button class="btn btn-ghost" onclick="fillAnalyzeExample()">Fill Example</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div id="an-result" class="result-box hidden"></div>
+      <div id="an-placeholder" class="placeholder-hint">
+        Fill in the metrics and click <strong style="color:var(--text)">Analyze</strong>, or use <strong style="color:var(--text)">Fill Example</strong> to try a sample company.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ASK ══════════════ -->
+<div id="page-ask" class="page">
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-title">Company Context <span>Optional — grounds the AI in your numbers</span></div>
+        <div class="context-rows" id="ctx-rows">
+          <div class="context-row">
+            <input type="text" placeholder="Key (e.g. ARR)" class="ctx-key" />
+            <input type="text" placeholder="Value (e.g. $5M)" class="ctx-val" />
+            <button class="remove-ctx" onclick="removeCtx(this)">×</button>
+          </div>
+        </div>
+        <button class="add-ctx" onclick="addCtx()">+ Add context field</button>
+
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+          <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="fillAskExample()">Fill Example</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="chat-header">
+        <div style="font-size:15px;font-weight:600">Conversation</div>
+        <button class="clear-btn" onclick="clearChat()">Clear chat</button>
+      </div>
+      <div class="chat-window" id="chat-window">
+        <div class="chat-empty" id="chat-empty">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Ask any finance or strategy question
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="ask-input" placeholder="e.g. Should we raise now or wait 6 months?" onkeydown="askKeydown(event)"></textarea>
+        <button class="send-btn" id="ask-btn" onclick="sendAsk()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ COMPARE ══════════════ -->
+<div id="page-compare" class="page">
+  <div class="two-col" style="margin-bottom:24px">
+    <!-- Company A -->
+    <div class="card">
+      <div class="card-title" style="color:var(--accent)">Company A</div>
+      <div class="field"><label>Company Name <span class="req">*</span></label><input type="text" id="ca-name" placeholder="e.g. GrowthCo" /></div>
+
+      <div class="section-label">Revenue &amp; Growth</div>
+      <div class="field-row">
+        <div class="field"><label>Annual Revenue <span class="req">*</span></label><div class="prefix-input"><span>$</span><input type="number" id="ca-revenue" placeholder="8,000,000" min="1" /></div></div>
+        <div class="field"><label>Growth YoY <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="ca-growth" placeholder="110" /><span>%</span></div></div>
+      </div>
+
+      <div class="section-label">Profitability</div>
+      <div class="field-row">
+        <div class="field"><label>Gross Margin <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="ca-gm" placeholder="75" min="-100" max="100" /><span>%</span></div></div>
+        <div class="field"><label>EBITDA Margin <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="ca-ebitda" placeholder="5" min="-100" max="100" /><span>%</span></div></div>
+      </div>
+
+      <div class="section-label">Cash &amp; Profile</div>
+      <div class="field-row">
+        <div class="field"><label>Runway <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="ca-runway" placeholder="20" min="0" /><span>mo</span></div></div>
+        <div class="field"><label>Stage <span class="opt">(optional)</span></label>
+          <select id="ca-stage"><option value="">— Select —</option><option>Pre-Seed</option><option>Seed</option><option>Series A</option><option>Series B</option><option>Series C</option><option>Series D+</option><option>Growth</option><option>Pre-IPO</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Industry <span class="opt">(optional)</span></label><input type="text" id="ca-industry" placeholder="e.g. SaaS" /></div>
+    </div>
+
+    <!-- Company B -->
+    <div class="card">
+      <div class="card-title" style="color:var(--accent2)">Company B</div>
+      <div class="field"><label>Company Name <span class="req">*</span></label><input type="text" id="cb-name" placeholder="e.g. ProfitCo" /></div>
+
+      <div class="section-label">Revenue &amp; Growth</div>
+      <div class="field-row">
+        <div class="field"><label>Annual Revenue <span class="req">*</span></label><div class="prefix-input"><span>$</span><input type="number" id="cb-revenue" placeholder="14,000,000" min="1" /></div></div>
+        <div class="field"><label>Growth YoY <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="cb-growth" placeholder="35" /><span>%</span></div></div>
+      </div>
+
+      <div class="section-label">Profitability</div>
+      <div class="field-row">
+        <div class="field"><label>Gross Margin <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="cb-gm" placeholder="68" min="-100" max="100" /><span>%</span></div></div>
+        <div class="field"><label>EBITDA Margin <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="cb-ebitda" placeholder="18" min="-100" max="100" /><span>%</span></div></div>
+      </div>
+
+      <div class="section-label">Cash &amp; Profile</div>
+      <div class="field-row">
+        <div class="field"><label>Runway <span class="opt">(optional)</span></label><div class="suffix-input"><input type="number" id="cb-runway" placeholder="" min="0" /><span>mo</span></div></div>
+        <div class="field"><label>Stage <span class="opt">(optional)</span></label>
+          <select id="cb-stage"><option value="">— Select —</option><option>Pre-Seed</option><option>Seed</option><option>Series A</option><option>Series B</option><option>Series C</option><option>Series D+</option><option>Growth</option><option>Pre-IPO</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Industry <span class="opt">(optional)</span></label><input type="text" id="cb-industry" placeholder="e.g. SaaS" /></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title">Comparison Focus <span>Optional — what dimensions matter most?</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" class="crit" value="growth"> Growth</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" class="crit" value="profitability"> Profitability</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" class="crit" value="burn efficiency"> Burn Efficiency</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" class="crit" value="unit economics"> Unit Economics</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" class="crit" value="fundraising readiness"> Fundraising Readiness</label>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="cmp-btn" onclick="runCompare()">
+        <span id="cmp-btn-text">Compare Companies</span>
+      </button>
+      <button class="btn btn-ghost" onclick="fillCompareExample()">Fill Example</button>
+    </div>
+  </div>
+
+  <div id="cmp-result" class="result-box hidden"></div>
+  <div id="cmp-placeholder" class="placeholder-hint">
+    Fill in both companies and click <strong style="color:var(--text)">Compare Companies</strong>, or use <strong style="color:var(--text)">Fill Example</strong> to try sample data.
+  </div>
+</div>
+
+<script>
+  // ── Tab switching ─────────────────────────────────────────────────
+  const TAB_NAMES = ['home','analyze','ask','compare'];
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', TAB_NAMES[i] === name));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  function set(id, v) {
+    const el = document.getElementById(id);
+    if (el) el.value = v ?? '';
+  }
+  function numVal(id) { const v = document.getElementById(id).value; return v === '' ? null : parseFloat(v); }
+  function strVal(id) { const v = document.getElementById(id).value.trim(); return v === '' ? null : v; }
+
+  function setLoading(btnId, textId, loading, label) {
+    document.getElementById(btnId).disabled = loading;
+    document.getElementById(textId).innerHTML = loading ? '<span class="spinner"></span> Thinking…' : label;
+  }
+
+  function buildMetrics(prefix) {
+    return {
+      company_name:       strVal(prefix + '-name'),
+      revenue:            numVal(prefix + '-revenue'),
+      revenue_growth_yoy: numVal(prefix + '-growth'),
+      gross_margin:       numVal(prefix + '-gm'),
+      ebitda_margin:      numVal(prefix + '-ebitda'),
+      runway_months:      numVal(prefix + '-runway'),
+      burn_rate:          prefix === 'an' ? numVal('an-burn') : null,
+      headcount:          prefix === 'an' ? numVal('an-headcount') : null,
+      industry:           strVal(prefix + '-industry'),
+      stage:              strVal(prefix + '-stage'),
+    };
+  }
+
+  function showError(boxId, phId, msg) {
+    document.getElementById(phId).style.display = 'none';
+    const box = document.getElementById(boxId);
+    box.classList.remove('hidden');
+    box.innerHTML = `<div class="error-box">${escHtml(msg)}</div>`;
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\n/g,'<br>');
+  }
+  function pill(text, dotClass) {
+    return `<div class="pill"><span class="pill-dot ${dotClass}"></span>${escHtml(text)}</div>`;
+  }
+
+  // ── Fill Example: Analyze ─────────────────────────────────────────
+  function fillAnalyzeExample() {
+    set('an-name',     'Acme SaaS');
+    set('an-revenue',  5000000);
+    set('an-growth',   95);
+    set('an-gm',       72);
+    set('an-ebitda',   -8);
+    set('an-burn',     250000);
+    set('an-runway',   18);
+    set('an-industry', 'SaaS');
+    set('an-stage',    'Series B');
+    set('an-headcount',38);
+    // check "burn efficiency" and "fundraising readiness"
+    document.querySelectorAll('#focus-checks input').forEach(cb => {
+      cb.checked = ['burn efficiency','fundraising readiness'].includes(cb.value);
+    });
+  }
+
+  // ── Fill Example: Ask ─────────────────────────────────────────────
+  function fillAskExample() {
+    // Populate context fields
+    const rows = document.getElementById('ctx-rows');
+    rows.innerHTML = '';
+    const ctx = [
+      ['Company', 'Acme SaaS'],
+      ['ARR', '$5M'],
+      ['Stage', 'Series B'],
+      ['Industry', 'SaaS'],
+      ['Runway', '18 months'],
+      ['Growth (YoY)', '95%'],
+    ];
+    ctx.forEach(([k, v]) => {
+      const row = document.createElement('div');
+      row.className = 'context-row';
+      row.innerHTML = `<input type="text" placeholder="Key" class="ctx-key" value="${k}" /><input type="text" placeholder="Value" class="ctx-val" value="${v}" /><button class="remove-ctx" onclick="removeCtx(this)">×</button>`;
+      rows.appendChild(row);
+    });
+    // Pre-fill question
+    document.getElementById('ask-input').value =
+      'We have $5M ARR growing at 95% YoY with 18 months of runway. Should we start our Series B raise now, or wait another 6 months to show more growth?';
+  }
+
+  // ── Fill Example: Compare ─────────────────────────────────────────
+  function fillCompareExample() {
+    set('ca-name',     'GrowthCo');
+    set('ca-revenue',  8000000);
+    set('ca-growth',   110);
+    set('ca-gm',       75);
+    set('ca-ebitda',   5);
+    set('ca-runway',   20);
+    set('ca-stage',    'Series B');
+    set('ca-industry', 'SaaS');
+
+    set('cb-name',     'ProfitCo');
+    set('cb-revenue',  14000000);
+    set('cb-growth',   35);
+    set('cb-gm',       68);
+    set('cb-ebitda',   18);
+    set('cb-runway',   '');
+    set('cb-stage',    'Series C');
+    set('cb-industry', 'SaaS');
+
+    document.querySelectorAll('.crit').forEach(cb => {
+      cb.checked = ['growth','profitability','burn efficiency'].includes(cb.value);
+    });
+  }
+
+  // ── Analyze ───────────────────────────────────────────────────────
+  async function runAnalyze() {
+    const metrics = buildMetrics('an');
+    if (!metrics.company_name) return alert('Company name is required.');
+    if (!metrics.revenue)      return alert('Annual revenue is required.');
+
+    const focusAreas = [...document.querySelectorAll('#focus-checks input:checked')].map(c => c.value);
+
+    setLoading('an-btn', 'an-btn-text', true, 'Analyze');
+    document.getElementById('an-placeholder').style.display = 'none';
+    document.getElementById('an-result').classList.add('hidden');
+
+    try {
+      const res = await fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metrics, focus_areas: focusAreas.length ? focusAreas : null }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Request failed');
+      renderAnalyze(data);
+    } catch (e) {
+      showError('an-result', 'an-placeholder', e.message);
+    } finally {
+      setLoading('an-btn', 'an-btn-text', false, 'Analyze');
+    }
+  }
+
+  function renderAnalyze(d) {
+    const box = document.getElementById('an-result');
+    box.classList.remove('hidden');
+    box.innerHTML = `
+      <div class="result-section">
+        <h4>Analysis — ${escHtml(d.company_name)}</h4>
+        <p>${escHtml(d.analysis)}</p>
+      </div>
+      ${d.key_insights.length ? `<div class="result-section"><h4>Key Insights</h4><div class="pill-list">${d.key_insights.map(i=>pill(i,'dot-blue')).join('')}</div></div>` : ''}
+      ${d.risk_flags.length   ? `<div class="result-section"><h4>Risk Flags</h4><div class="pill-list">${d.risk_flags.map(i=>pill(i,'dot-red')).join('')}</div></div>` : ''}
+      ${d.recommendations.length ? `<div class="result-section"><h4>Recommendations</h4><div class="pill-list">${d.recommendations.map(i=>pill(i,'dot-green')).join('')}</div></div>` : ''}
+    `;
+  }
+
+  // ── Ask / Chat ────────────────────────────────────────────────────
+  let chatHistory = [];
+
+  function clearChat() {
+    chatHistory = [];
+    document.getElementById('chat-window').innerHTML = `
+      <div class="chat-empty" id="chat-empty">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Ask any finance or strategy question
+      </div>`;
+  }
+
+  function askKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAsk(); }
+  }
+
+  function addCtx() {
+    const row = document.createElement('div');
+    row.className = 'context-row';
+    row.innerHTML = `<input type="text" placeholder="Key" class="ctx-key" /><input type="text" placeholder="Value" class="ctx-val" /><button class="remove-ctx" onclick="removeCtx(this)">×</button>`;
+    document.getElementById('ctx-rows').appendChild(row);
+  }
+  function removeCtx(btn) { btn.parentElement.remove(); }
+
+  function getContext() {
+    const ctx = {};
+    document.querySelectorAll('.context-row').forEach(row => {
+      const k = row.querySelector('.ctx-key').value.trim();
+      const v = row.querySelector('.ctx-val').value.trim();
+      if (k && v) ctx[k] = v;
+    });
+    return Object.keys(ctx).length ? ctx : null;
+  }
+
+  async function sendAsk() {
+    const input = document.getElementById('ask-input');
+    const q = input.value.trim();
+    if (!q) return;
+
+    const empty = document.getElementById('chat-empty');
+    if (empty) empty.remove();
+
+    appendBubble('user', q);
+    input.value = '';
+
+    const thinkingId = 'thinking-' + Date.now();
+    appendThinkingBubble(thinkingId);
+
+    const btn = document.getElementById('ask-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-dark"></span> Thinking…';
+
+    try {
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q, conversation_history: chatHistory, context: getContext() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Request failed');
+      chatHistory = data.updated_history;
+      document.getElementById(thinkingId).querySelector('.bubble-inner').innerHTML = escHtml(data.answer);
+    } catch (e) {
+      document.getElementById(thinkingId).querySelector('.bubble-inner').innerHTML =
+        `<span style="color:var(--red)">${escHtml(e.message)}</span>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Send';
+    }
+  }
+
+  function appendThinkingBubble(id) {
+    const w = document.getElementById('chat-window');
+    const div = document.createElement('div');
+    div.className = 'bubble assistant';
+    div.id = id;
+    div.innerHTML = `
+      <div class="bubble-label">fund-lens AI</div>
+      <div class="bubble-inner">
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>`;
+    w.appendChild(div);
+    w.scrollTop = w.scrollHeight;
+  }
+
+  function appendBubble(role, text, id) {
+    const w = document.getElementById('chat-window');
+    const div = document.createElement('div');
+    div.className = 'bubble ' + role;
+    if (id) div.id = id;
+    div.innerHTML = `<div class="bubble-label">${role === 'user' ? 'You' : 'fund-lens AI'}</div>
+                     <div class="bubble-inner">${escHtml(text)}</div>`;
+    w.appendChild(div);
+    w.scrollTop = w.scrollHeight;
+  }
+
+  // ── Compare ───────────────────────────────────────────────────────
+  async function runCompare() {
+    const company_a = buildMetrics('ca');
+    const company_b = buildMetrics('cb');
+    if (!company_a.company_name) return alert('Company A name is required.');
+    if (!company_a.revenue)      return alert('Company A revenue is required.');
+    if (!company_b.company_name) return alert('Company B name is required.');
+    if (!company_b.revenue)      return alert('Company B revenue is required.');
+
+    const criteria = [...document.querySelectorAll('.crit:checked')].map(c => c.value);
+
+    setLoading('cmp-btn', 'cmp-btn-text', true, 'Compare Companies');
+    document.getElementById('cmp-placeholder').style.display = 'none';
+    document.getElementById('cmp-result').classList.add('hidden');
+
+    try {
+      const res = await fetch('/portfolio/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_a, company_b, comparison_criteria: criteria.length ? criteria : null }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Request failed');
+      renderCompare(data);
+    } catch (e) {
+      showError('cmp-result', 'cmp-placeholder', e.message);
+    } finally {
+      setLoading('cmp-btn', 'cmp-btn-text', false, 'Compare Companies');
+    }
+  }
+
+  function renderCompare(d) {
+    const box = document.getElementById('cmp-result');
+    box.classList.remove('hidden');
+    const verdictCards = Object.entries(d.winner_by_category).map(([cat, winner]) => `
+      <div class="verdict-card">
+        <div class="category">${escHtml(cat.replace(/_/g,' '))}</div>
+        <div class="winner">${escHtml(winner)}</div>
+      </div>`).join('');
+    box.innerHTML = `
+      <div class="result-section">
+        <h4>Side-by-Side Comparison</h4>
+        <p>${escHtml(d.comparison)}</p>
+      </div>
+      ${Object.keys(d.winner_by_category).length ? `<div class="result-section"><h4>Category Winners</h4><div class="verdict-grid">${verdictCards}</div></div>` : ''}
+      ${d.summary ? `<div class="result-section"><h4>Overall Verdict</h4><p style="font-weight:500">${escHtml(d.summary)}</p></div>` : ''}
+    `;
+  }
+</script>
+</body>
+</html>
