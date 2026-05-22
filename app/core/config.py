@@ -1,37 +1,27 @@
+from __future__ import annotations
 import os
-import sys
 from pathlib import Path
-from typing import Optional
-from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
 
-# Only load .env file if it actually exists (locally). On Railway and other
-# cloud platforms there is no .env file — env vars are injected directly into
-# the process and must be read from os.environ, not from a file.
-_env_file = ".env" if Path(".env").exists() else None
+# Load .env for local development. On Railway this file doesn't exist and
+# load_dotenv() silently does nothing — env vars come from Railway's Variables.
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 
-class Settings(BaseSettings):
-    anthropic_api_key: str
-    claude_model: str = "claude-sonnet-4-6"
-    max_tokens: int = 2048
+class Settings:
+    anthropic_api_key: str = os.environ.get("ANTHROPIC_API_KEY", "")
+    claude_model: str = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
+    max_tokens: int = int(os.environ.get("MAX_TOKENS", "2048"))
     app_name: str = "fund-lens"
-    debug: bool = False
-    tavily_api_key: Optional[str] = None
+    debug: bool = os.environ.get("DEBUG", "false").lower() == "true"
+    tavily_api_key: str | None = os.environ.get("TAVILY_API_KEY") or None
 
-    model_config = {"env_file": _env_file, "env_file_encoding": "utf-8"}
-
-
-# Emit a clear startup log so Railway's deployment logs show exactly which
-# required variables are present or missing — visible under "Deployments → logs".
-_required = {"ANTHROPIC_API_KEY"}
-_found = _required & set(os.environ)
-_missing = _required - _found
-if _missing:
-    print(
-        f"[fund-lens] STARTUP ERROR — missing required env vars: {sorted(_missing)}\n"
-        f"[fund-lens] Variables visible in os.environ: {sorted(k for k in os.environ if not k.startswith('_'))}",
-        file=sys.stderr,
-        flush=True,
-    )
 
 settings = Settings()
+
+if not settings.anthropic_api_key:
+    raise RuntimeError(
+        "ANTHROPIC_API_KEY is not set.\n"
+        "  • Railway: add it in the service Variables tab\n"
+        "  • Local:   add it to your .env file"
+    )
